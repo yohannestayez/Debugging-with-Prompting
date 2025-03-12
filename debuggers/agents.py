@@ -2,8 +2,6 @@ import autogen
 import json
 import re
 
-
-
 class Instructor(autogen.AssistantAgent):
     # Uses instruction and role prompting to set the debugging context based on the code and error message.
 
@@ -99,13 +97,14 @@ class Fixer(autogen.AssistantAgent):
         
         # Program-Aided Language Technique: Execute the corrected code to validate its correctness.
         try:
-            exec_globals = {}
+            exec_globals = {} # Capturing the execution context if needed
+
+            # Execute the fixed code in a controlled environment
+            print('Code execution result:')
             exec(fixed_code, exec_globals)
-            result = exec_globals  # Capturing the execution context
         except Exception as e:
             return f"Code execution failed: {e}"
-        
-        return {"fixed_code": fixed_code, "execution_result": result}
+        return fixed_code
 
 class Insighter(autogen.AssistantAgent):
     def __init__(self, llm_config):
@@ -126,7 +125,7 @@ class Insighter(autogen.AssistantAgent):
         prompt = (
             f"Given the following debugging reasoning: {reasoning}\n"
             "Provide additional insights on common error patterns, language-specific pitfalls, and best practices related to the issue."
-            "Do it within 250 words"
+            "Give a direct response within 250 words. Ignore unnecessary words like 'Let's'."
         )
         insights = self.generate_reply([{"content": prompt, "role": "user"}])['content']
         return insights
