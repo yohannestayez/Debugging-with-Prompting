@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> Python Code Debugger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 14px;
+      resize: vertical;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      background-color: #e9ecef;
+    }
+    .result h3 {
+      margin-top: 0;
+    }
+    .result pre {
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1> Python Code Debugger</h1>
+    <div id="loading" class="loading">Loading, please wait...</div>
+    <form id="debugForm">
+      <label for="code">Code Snippet</label>
+      <textarea id="code" name="code" rows="8" placeholder="Enter your code here..."></textarea>
+      
+      <label for="error">Error Message</label>
+      <textarea id="error" name="error" rows="3" placeholder="Enter the error message..."></textarea>
+      
+      <button type="submit" id="submitButton">Debug and Fix</button>
+    </form>
+    
+    <div id="results" class="result" style="display: none;">
+      <h3>Fixed Code</h3>
+      <pre id="fixedCode"></pre>
+      <h3>Insights</h3>
+      <pre id="insights"></pre>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('debugForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Disable the button and show loading indicator
+      const submitButton = document.getElementById('submitButton');
+      submitButton.disabled = true;
+      document.getElementById('loading').style.display = 'block';
+      
+      const code = document.getElementById('code').value;
+      const error = document.getElementById('error').value;
+      
+      const data = { code: code, error: error };
+      
+      try {
+        const response = await fetch('/debug', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+          throw new Error('Request failed with status ' + response.status);
+        }
+        
+        const results = await response.json();
+        // Fallback if the key is "corrected_code" instead of "fixed_code"
+        const fixedCode = results.fixed_code || results.corrected_code || "No fixed code returned.";
+        const insights = results.insights || "No insights returned.";
+        
+        document.getElementById('fixedCode').textContent = fixedCode;
+        document.getElementById('insights').textContent = insights;
+        document.getElementById('results').style.display = 'block';
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        // Re-enable the button and hide the loading indicator
+        submitButton.disabled = false;
+        document.getElementById('loading').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
