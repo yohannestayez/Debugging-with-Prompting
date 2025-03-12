@@ -22,13 +22,23 @@ class Classifier(autogen.AssistantAgent):
     # Employs few-shot prompting with examples embedded in the system message to classify the error type and provide an explanation.
 
     def __init__(self, llm_config):
-        system_message = """Classify the error type using examples. Use these examples to guide classification:
-                            - Error: "IndentationError: expected an indented block"
-                            Response: {"error_type": "SyntaxError", "explanation": "This is a syntax error due to incorrect indentation."}
-                            - Error: "IndexError: list index out of range"
-                            Response: {"error_type": "RuntimeError", "explanation": "This is a runtime error from accessing an invalid list index."}
-                            Respond with a JSON object containing 'error_type' and 'explanation'.
-                        """
+        system_message = """
+                Identify and classify the type of error and provide an explanation based on the given error message. Use the following examples as a reference:
+
+                Error: "IndentationError: expected an indented block"
+                Response: {"error_type": "SyntaxError", "explanation": "This is a syntax error due to incorrect indentation."}
+
+                Error: "IndexError: list index out of range"
+                Response: {"error_type": "RuntimeError", "explanation": "This is a runtime error from accessing an invalid list index."}
+
+                Error: "TypeError: unsupported operand type(s) for +: 'int' and 'str'"
+                Response: {"error_type": "TypeError", "explanation": "This occurs when an operation is performed on incompatible data types."}
+
+                Error: "KeyError: 'name'"
+                Response: {"error_type": "RuntimeError", "explanation": "This occurs when trying to access a non-existent key in a dictionary."}
+
+                Use these examples as guidance and return a JSON object containing error_type and explanation in the same format.
+         """
         super().__init__(name="Classifier", llm_config=llm_config, system_message=system_message)
 
     def classify_error(self, error_message: str) -> dict:
